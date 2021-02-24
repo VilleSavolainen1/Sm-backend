@@ -84,9 +84,14 @@ app.get('/images', (req, res) => {
     res.sendFile(__dirname + '/images/' + imagename)
 })
 
-
-//Uploading image
+//Uploading image...
 app.post('/save-image', upload.single('file'), (req, res) => {
+    res.send("saved")
+})
+
+
+//..and saving name
+app.post('/save-imagename', upload.single('file'), (req, res) => {
     const date = new Date();
     const hours = date.getHours();
     const minutes = date.getMinutes();
@@ -154,8 +159,9 @@ app.post('/signin', (req, res) => {
 //Send message
 app.post('/sendmessages', async (req, res) => {
     try {
-        let { image, username, message, date } = req.body;
-        await db.insert({ image, username, message, date })
+        let { image, sender, receiver, message, date } = req.body;
+        let seen = false;
+        await db.insert({ image, sender, receiver, message, date, seen })
             .into('messages')
             .then(status => {
                 res.json(status);
@@ -164,6 +170,16 @@ app.post('/sendmessages', async (req, res) => {
         console.log(e)
         res.status(500).send(e)
     }
+})
+
+//Get unseen messages
+app.post('/unseen', async(req, res) => {
+ let {receiver} = req.body;
+ await db.select('*').from('messages').where('receiver', '=', receiver)
+ .then(r => {
+     res.json(r)
+ })
+ .catch((err => {console.log(err)}))
 })
 
 //Delete message
