@@ -172,15 +172,27 @@ app.post('/sendmessages', async (req, res) => {
     }
 })
 
-//Get unseen messages
-app.post('/unseen', async(req, res) => {
- let {receiver} = req.body;
- await db.select('*').from('messages').where('receiver', '=', receiver)
+//Get unread messages
+app.post('/unread', async(req, res) => {
+    let {receiver} = req.body;
+ await db.select('*').from('messages').where('seen', '=', 'false').andWhere('receiver', '=', receiver)
  .then(r => {
      res.json(r)
  })
  .catch((err => {console.log(err)}))
 })
+
+//Message has been read
+app.post('/read', (req, res) => {
+    let {id} = req.body;
+    db('messages').where('id', '=', id).update({seen: 'true'})
+    .then(r => {
+        res.json(r)
+    }).catch(e => {
+        console.log(e)
+    })
+})
+
 
 //Delete message
 app.post('/deletemessage', async (req, res) => {
